@@ -9,18 +9,18 @@ rate:
   - maker_fee: 0.04%
     taker_fee: 0.08%
     tier: '1'
-    volume_max: 2.5
+    volume_max: 15
     volume_min: 0
   - maker_fee: 0.03%
     taker_fee: 0.06%
     tier: '2'
-    volume_max: 10
-    volume_min: 2.5
+    volume_max: 30
+    volume_min: 15
   - maker_fee: 0.024%
     taker_fee: 0.054%
     tier: '3'
     volume_max: 250
-    volume_min: 10
+    volume_min: 30
   - maker_fee: 0.018%
     taker_fee: 0.048%
     tier: '4'
