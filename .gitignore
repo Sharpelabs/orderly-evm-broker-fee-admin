@@ -1,1 +1,6 @@
 .env
+broker.yaml
+__pycache__/
+*log
+venv_orderly/
+logs/
