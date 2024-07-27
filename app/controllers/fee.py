@@ -20,6 +20,7 @@ def is_lobster(user_address):
         # Set up the Infura provider
         infura_url = f'https://mainnet.infura.io/v3/{os.getenv("INFURA_KEY")}'
         web3 = Web3(Web3.HTTPProvider(infura_url))
+        user_address = web3.to_checksum_address(user_address)
 
         # Contract address and ABI
         contract_address = '0x026224A2940bFE258D0dbE947919B62fE321F042'
