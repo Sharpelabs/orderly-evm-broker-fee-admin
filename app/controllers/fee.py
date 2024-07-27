@@ -138,6 +138,10 @@ def update_user_rate_base_volume():
                         _user_fee["futures_taker_fee_rate"]
                     )
                     old_user_fee = user_fee.pd.query_data(_account_id)
+                    # Lobster NFT logic
+                    is_nft_holder = is_lobster(_address)
+                    lobster_maker_fee = 0.00024
+                    lobster_taker_fee = 0.00054
                     if not old_user_fee.empty:
                         _old_futures_maker_fee_rate = Decimal(
                             old_user_fee.futures_maker_fee_rate.values[0]
@@ -159,10 +163,6 @@ def update_user_rate_base_volume():
                                 )
                                 _ret = {}
 
-                                # Lobster NFT logic
-                                is_nft_holder = is_lobster(_address)
-                                lobster_maker_fee = 0.00024
-                                lobster_taker_fee = 0.00054
                                 if is_nft_holder and maker_fee_rate > lobster_maker_fee and taker_fee_rate > lobster_taker_fee:
                                     _ret = {
                                         "account_id": _account_id,
@@ -187,12 +187,22 @@ def update_user_rate_base_volume():
                                 f"New rates are not smaller than old rates: {_account_id}"
                             )
                     else:
-                        _ret = {
-                            "account_id": _account_id,
-                            "futures_maker_fee_rate": _new_futures_maker_fee_rate,
-                            "futures_taker_fee_rate": _new_futures_taker_fee_rate,
-                            "address": _address,
-                        }
+                        _ret = {}
+
+                        if is_nft_holder and maker_fee_rate > lobster_maker_fee and taker_fee_rate > lobster_taker_fee:
+                            _ret = {
+                                "account_id": _account_id,
+                                "futures_maker_fee_rate": lobster_maker_fee,
+                                "futures_taker_fee_rate": lobster_taker_fee,
+                                "address": _address,
+                            }
+                        else:
+                            _ret = {
+                                "account_id": _account_id,
+                                "futures_maker_fee_rate": maker_fee_rate,
+                                "futures_taker_fee_rate": taker_fee_rate,
+                                "address": _address,
+                            }
                         data.append(_ret)
                         user_fee.create_update_user_fee_data(_ret)
         _count += 1
