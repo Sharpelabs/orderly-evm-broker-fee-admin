@@ -12,6 +12,46 @@ from utils.myconfig import ConfigLoader
 import scheduler
 from utils.pd import BrokerFee
 from decimal import Decimal, getcontext
+from web3 import Web3
+import os
+
+def is_lobster(user_address):
+    try:
+        # Set up the Infura provider
+        infura_url = f'https://mainnet.infura.io/v3/{os.getenv("INFURA_KEY")}'
+        web3 = Web3(Web3.HTTPProvider(infura_url))
+
+        # Contract address and ABI
+        contract_address = '0x026224A2940bFE258D0dbE947919B62fE321F042'
+        abi = [
+            {
+                "constant": True,
+                "inputs": [
+                    {"name": "owner", "type": "address"}
+                ],
+                "name": "balanceOf",
+                "outputs": [
+                    {"name": "balance", "type": "uint256"}
+                ],
+                "payable": False,
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ]
+
+        # Create a contract instance
+        contract = web3.eth.contract(address=contract_address, abi=abi)
+
+        # Call the balanceOf function
+        balance = contract.functions.balanceOf(user_address).call()
+        print(f"Balance of {user_address}: {balance}")
+        # print(balance)
+
+        return balance > 0
+
+    except Exception as e:
+        print('Error retrieving balance:', e)
+        return False
 
 logger = setup_logging()
 config = ConfigLoader.load_config()
@@ -117,12 +157,27 @@ def update_user_rate_base_volume():
                                 logger.info(
                                     f"{_account_id} - New Maker Fee Rate: {maker_fee_rate}, Smaller Taker Fee Rate: {taker_fee_rate}"
                                 )
-                                _ret = {
-                                    "account_id": _account_id,
-                                    "futures_maker_fee_rate": maker_fee_rate,
-                                    "futures_taker_fee_rate": taker_fee_rate,
-                                    "address": _address,
-                                }
+                                _ret = {}
+
+                                # Lobster NFT logic
+                                is_nft_holder = is_lobster(_address)
+                                lobster_maker_fee = 0.00024
+                                lobster_taker_fee = 0.00054
+                                if is_nft_holder and maker_fee_rate > lobster_maker_fee and taker_fee_rate > lobster_taker_fee:
+                                    _ret = {
+                                        "account_id": _account_id,
+                                        "futures_maker_fee_rate": lobster_maker_fee,
+                                        "futures_taker_fee_rate": lobster_taker_fee,
+                                        "address": _address,
+                                    }
+                                else:
+                                    _ret = {
+                                        "account_id": _account_id,
+                                        "futures_maker_fee_rate": maker_fee_rate,
+                                        "futures_taker_fee_rate": taker_fee_rate,
+                                        "address": _address,
+                                    }
+                                
                                 data.append(_ret)
                                 user_fee.create_update_user_fee_data(_ret)
                             status = True
