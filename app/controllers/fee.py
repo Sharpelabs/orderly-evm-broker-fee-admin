@@ -15,6 +15,8 @@ from decimal import Decimal, getcontext
 from web3 import Web3
 import os
 import requests
+from dotenv import load_dotenv
+load_dotenv()
 
 alchemy_api_key = os.getenv("ALCHEMY_KEY")
 
